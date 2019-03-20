@@ -55,7 +55,7 @@ namespace TreeCshape
             if (Deep != -1)
             {
                 if (deep >= Deep)
-                    return "";
+                    return out_str;
             }
 
             var files = dir.GetFiles();
