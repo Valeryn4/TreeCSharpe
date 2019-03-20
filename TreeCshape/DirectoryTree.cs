@@ -1,15 +1,18 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace TreeCshape
 {
+
     public class DirectoryTree
     {
         DirectoryInfo _dir;
         public int Deep { get; set; } = -1;
         public int Verbose { get; set; } = 2;
+        public bool FullPathFind { get; set; } = true;
         public DirectoryTree(string path) => _dir = new DirectoryInfo(path);
         public override string ToString()
         {
@@ -84,5 +87,65 @@ namespace TreeCshape
                 + (byte_suffix ? "(" + file.Length + " b)" : ""), 
                 ref parent, end);
         }
+
+        public List<string> FindToList(string sub_str)
+        {
+            return FindDirsToList(sub_str, _dir);
+        }
+
+        List<string> FindDirsToList(string sub_str, DirectoryInfo dir, int deep = 0)
+        {
+            var list = new List<string>();
+            var dirs = dir.GetDirectories();
+            var files = dir.GetFiles();
+
+            if (Find(sub_str, dir.Name))
+            {
+                if (FullPathFind)
+                    list.Add(dir.FullName);
+                else
+                    list.Add(dir.Name);
+            }
+
+            if (Deep != -1 && deep >= Deep)
+            {
+                return list;
+            }
+
+            foreach(var f in files)
+            {
+                FindFileToList(sub_str, f, ref list);
+            }
+
+            foreach(var d in dirs)
+            {
+                list.AddRange(FindDirsToList(sub_str, d, deep + 1));
+            }
+
+            return list;
+        }
+
+        void FindFileToList(string sub_str, FileInfo file, ref List<string> list)
+        {
+            if (Find(sub_str, file.Name))
+            {
+                if (FullPathFind)
+                    list.Add(file.FullName);
+                else
+                    list.Add(file.Name);
+            }
+        }
+
+        bool Find(string sub_str, string target)
+        {
+            var regex = new Regex(sub_str);
+            if (regex.IsMatch(target))
+            {
+                return true;
+            }
+            return false;
+        }
+
+
     }
 }

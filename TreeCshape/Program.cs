@@ -19,7 +19,14 @@ namespace TreeCshape
               HelpText = "Максимальная глубина вывода дерева файловой системы. [-1] - неограниченно")]
             public int Deep { get; set; }
 
-            [Value(0, MetaName = "<path>", Default = ".", HelpText = "Путь до директории")]
+            [Option('f', "find",
+              Default = "",
+              HelpText = "Поиск подстроки с выводом пути. Работают регулярные выражения")]
+            public string FindSubString { get; set; }
+
+            //TODO надо сделать вывод по дереву
+
+            [Value(0, MetaName = "<path>", Default = "../../..", HelpText = "Путь до директории")]
             public string Path { get; set; }
 
         }
@@ -38,7 +45,19 @@ namespace TreeCshape
                            Verbose = o.Verbose
                        };
 
+                       if (o.FindSubString != "")
+                       {
+                           var list_find = tree.FindToList(o.FindSubString);
+                           foreach(var str in list_find)
+                           {
+                               Console.WriteLine(str);
+                           }
+
+                           return;
+                       }
+
                        Console.WriteLine(tree.ToString());
+                       return;
                    });
             }
             catch (DirectoryNotFoundException e)
