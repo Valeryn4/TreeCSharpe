@@ -1,86 +1,52 @@
 ﻿using System;
 using System.IO;
+using CommandLine;
 
 namespace TreeCshape
 {
     class Program
     {
-        /// <summary>
-        /// Инициализирует Tree класс и выводит сразу же в консоль
-        /// Если директория не найдена - выпускает DirectoryNotFoundException внутри Tree
-        /// </summary>
-        /// <param name="str">путь до директории, относительный или абсолютный</param>
-        static void PrintTree(string str)
+       
+        public class Options
         {
-            var tree = new Tree(str);
+            [Option('v', "verbose",
+              Default = 2,
+              HelpText = "Вывод дополнительной информации. [0] - вывести только имена файлов и папок. [1] - файлы и папки подписаны типом. [2] - файлы и папки подписаны типом и размером ")]
+            public int Verbose { get; set; }
 
-            var print_tree = tree.ToString();
-            Console.WriteLine(print_tree);
-            
+            [Option('d', "deep",
+              Default = -1,
+              HelpText = "Максимальная глубина вывода дерева файловой системы. [-1] - неограниченно")]
+            public int Deep { get; set; }
+
+            [Value(0, MetaName = "<path>", Default = ".", HelpText = "Путь до директории")]
+            public string Path { get; set; }
+
         }
-
-        /// <summary>
-        /// Хелп-функция, выводит справку в консоль, если str является -h/--help/help
-        /// иначе вернет false
-        /// </summary>
-        /// <param name="str">аргумент (обычно arg[1])</param>
-        /// <returns>если аргумент был валидный - верне true</returns>
-        static bool IsHelpAndPrint(string str)
-        {
-            if (str == "-h" || str == "--help" || str == "help")
-            {
-                var print_str = "";
-                print_str += "[-h | --help | help] - help command\n";
-                print_str += "[path_to_dir] - printing tree <path_to_dir> directory\n";
-                print_str += "  example:\n";
-                print_str += "   dotnet.exe .\\TreeCShape.dll C:\\Windows\n";
-                print_str += "   Windows\n";
-                print_str += "    |\n";
-                print_str += "    +-System32\n";
-                print_str += "    |\n";
-                print_str += "   ...\n";
-
-                Console.WriteLine(print_str);
-
-                return true;
-            }
-            return false;
-        }
-
-#if DEBUG
-        static void TestPrint()
-        {
-            PrintTree(@"..\..\..\");
-            Console.WriteLine("\n\nPreesKey");
-            Console.ReadKey();
-        }
-#endif
 
         static void Main(string[] args)
         {
 
-#if DEBUG
-            TestPrint();
-#endif
             try
             {
-                if (args.Length == 0)
-                {
-                    PrintTree(@".\");
-                }
-                else if (args.Length > 0)
-                {
-                    if (IsHelpAndPrint(args[0]))
-                        return;
-                    PrintTree(args[0]);
-                }
+                Parser.Default.ParseArguments<Options>(args)
+                   .WithParsed<Options>(o =>
+                   {
+                       var tree = new DirectoryTree(o.Path)
+                       {
+                           Deep = o.Deep,
+                           Verbose = o.Verbose
+                       };
+
+                       Console.WriteLine(tree.ToString());
+                   });
             }
             catch (DirectoryNotFoundException e)
             {
                 Console.WriteLine("Дирректория не найдена! MSG: " + e.Message);
                 if (e.InnerException != null)
                 {
-                    Console.WriteLine(" |\n +-" + e.InnerException.Message);
+                    Console.WriteLine("   " + e.InnerException.Message);
                 }
             }
             catch (Exception e)
