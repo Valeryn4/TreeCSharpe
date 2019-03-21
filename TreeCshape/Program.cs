@@ -30,7 +30,7 @@ namespace TreeCshape
 
             //TODO надо сделать вывод по дереву
 
-            [Value(0, MetaName = "<path>", Default = "../../..", HelpText = "Путь до директории")]
+            [Value(0, MetaName = "<path>", Default = ".", HelpText = "Путь до директории")]
             public string Path { get; set; }
 
         }
