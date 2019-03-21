@@ -24,6 +24,10 @@ namespace TreeCshape
               HelpText = "Поиск подстроки с выводом пути. Работают регулярные выражения")]
             public string FindSubString { get; set; }
 
+            [Option('i', "ignore-file",
+              HelpText = "Игнорирование файлов при выводе")]
+            public bool IgnoreFile { get; set; }
+
             //TODO надо сделать вывод по дереву
 
             [Value(0, MetaName = "<path>", Default = "../../..", HelpText = "Путь до директории")]
@@ -42,7 +46,8 @@ namespace TreeCshape
                        var tree = new DirectoryTree(o.Path)
                        {
                            Deep = o.Deep,
-                           Verbose = o.Verbose
+                           Verbose = o.Verbose,
+                           IgnoreFile = o.IgnoreFile
                        };
 
                        if (o.FindSubString != "")
@@ -56,7 +61,7 @@ namespace TreeCshape
                            return;
                        }
 
-                       Console.WriteLine(tree.ToString());
+                       tree.Print();
                        return;
                    });
             }
